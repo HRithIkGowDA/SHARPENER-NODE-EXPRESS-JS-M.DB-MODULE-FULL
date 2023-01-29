@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXPENSE TRACKER</title>
+</head>
+<body>
+    <h2>EXPENSE TRACKER</h2>
+    <form onsubmit="orderb(event)">
+        <label>choose ExpenseAmount</label>
+        <input type="number" id="id1" name="amount1" required>
+        <label>choose description</label>
+        <input type="text" id="id2" name="amount2">
+        <label>choose category</label>
+        <select name="amount3"  id="id3" required>
+            <option value="movies">movies</option>
+            <option value="shopping">shopping</option>
+            <option value="gym">gym</option>
+            <option value="stationary">stationary</option>
+            <option value="food">food</option>
+
+        </select>
+        <button>Add Expenses</button>
+    </form>
+    <ul id="listofusers"></ul>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.2.0/axios.min.js"></script>
+    <script>
+        function orderb(event){
+            event.preventDefault()
+            const expense = event.target.amount1.value;
+            const desc=event.target.amount2.value;
+            const cate=event.target.amount3.value;
+            //  localStorage.setItem('expense',expense)
+            //  localStorage.setItem('desc',desc)
+            //  localStorage.setItem('cate',cate)
+            const obj={
+                expense,
+                desc,
+                cate
+            }
+            //  localStorage.setItem(obj.expense,JSON.stringify(obj))
+            //  shownewuseronscreen(obj)
+            axios.post("http://localhost:3500/user/add-user",obj)
+            .then((response) =>{
+                 console.log(response)
+                shownewuseronscreen(response)
+                
+            })
+            .catch((err) =>{
+                document.body.innerHTML = document.body.innerHTML + "<h4>something went wrong </h4>"
+                console.log(err)
+            })
+        }
+        window.addEventListener("DOMContentLoaded", () => {
+                
+                 axios.get("http://localhost:3500/user/get-users")
+                 .then((response) => {
+                    console.log(response)
+                    for(var i=0;i<response.length;i++){
+                        shownewuseronscreen(response[i])
+                    }
+                 })
+                 .catch((error) => {
+                    console.log(error)
+                 })
+              
+            })
+    
+        function shownewuseronscreen(user){
+            console.log(user)
+          
+            const parentnode=document.getElementById('listofusers')
+            const childnode=   `<li id=${user.id}> ${user.expenseamount}, ${user.category}, ${user.description}
+                                <button onclick=deleteUser('${user.id}')> Delete user </button>
+                                <button onclick=edituser('${user.description}','${user.expenseamount}','${user.category}','${user.id}')> Edit User </button></li>`
+            parentnode.innerHTML= parentnode.innerHTML + childnode
+        }
+        function edituser(descr,expense,cate,userid){
+            document.getElementById('id2').value=descr
+            document.getElementById('id1').value=expense
+            document.getElementById('id3').value=cate
+            deleteUser(userid)
+
+        }
+        function deleteUser(userid){
+            axios.delete(`http://localhost:3500/user/delete-user/${userid}`)
+            .then((response) => {
+                removeuserfromscreen(userid)
+
+            })
+            .catch((err) =>{
+                console.log(err)
+            })
+
+         }
+        function removeuserfromscreen(userid){
+            const parentnode=document.getElementById('listofusers')
+            const childnodeisdeleted=document.getElementById(userid)
+            parentnode.removeChild(childnodeisdeleted)
+        }
+    </script>
+    
+</body>
+</html>
